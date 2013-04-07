@@ -20,6 +20,8 @@ static const char* data_chunk_ID	= "data";
 //------------------------------------------------------------------------
 /*!	@struct riff_chunk
 	@brief Structure of the RIFF WAVE file format
+	
+	The WAVE format is actually a special version of the RIFF standard.
 */
 //------------------------------------------------------------------------
 struct wave_chunk
@@ -29,25 +31,27 @@ struct wave_chunk
 	
 	struct format_chunk
 	{
-		uint32_t chunk_size;
-		uint16_t audio_format;
-		uint16_t channel_count;
-		uint32_t sample_rate;
-		uint32_t byte_rate;
-		uint16_t block_align;
-		uint16_t bits_per_sample;
+		uint32_t chunk_size;	//! format chunk size
+		uint16_t audio_format;	//! audio format e.g. 0x0001 is PCM
+		uint16_t channel_count;	//! number of channels
+		uint32_t sample_rate;	//! the sample rate e.g. 44100
+		uint32_t byte_rate;		//!
+		uint16_t block_align;	//!
+		uint16_t bits_per_sample;//! bits per sample e.g. 16
 	} fmt;
 	
 	struct data_chunk
 	{
-		uint32_t chunk_size;
-		std::vector<uint8_t> buffer;
+		uint32_t chunk_size;	//! data chunk size
+		std::vector<uint8_t> buffer;	//! buffer with e.g. PCM data
 	} data;
 };
 
 //------------------------------------------------------------------------
-/*!	@brief Loads an audiofile of type wav
-
+/*!	@fn load_wave_file
+	@brief Loads an audiofile of type wav
+	@param file_name The path including name of the file
+	@param riff The resulting RIFF chunk handed in as a reference
 */
 //------------------------------------------------------------------------
 void load_wave_file (const char* file_name, wave_chunk& riff)
