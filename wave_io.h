@@ -3,8 +3,8 @@
 //	(See accompanying file LICENSE_1_0.txt or copy at
 //	http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef __asl_wav_file_reader__
-#define __asl_wav_file_reader__
+#ifndef __asl_wav_io__
+#define __asl_wav_io__
 
 #include <fstream>
 #include <stdint.h>
@@ -102,4 +102,4 @@ void load_wave_file (const char* file_name, wave_chunk& riff)
 //------------------------------------------------------------------------
 } // namespace asl
 
-#endif // __asl_wav_file_reader__
+#endif // __asl_wav_io__
