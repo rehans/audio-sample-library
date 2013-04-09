@@ -9,6 +9,7 @@
 #include <fstream>
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 namespace asl
 {
@@ -72,13 +73,11 @@ void load_wave_file (const char* file_name, wave_chunk& riff)
 				file_stream.read(chunk_ID, sizeof(chunk_ID));
 				if (std::strncmp (chunk_ID, format_chunk_ID, sizeof(chunk_ID)) == 0)
 				{
-					file_stream.read (reinterpret_cast<char*>(&riff.fmt.chunk_size), sizeof (riff.fmt.chunk_size));
-					file_stream.read (reinterpret_cast<char*>(&riff.fmt.audio_format), sizeof (riff.fmt.audio_format));
-					file_stream.read (reinterpret_cast<char*>(&riff.fmt.channel_count), sizeof (riff.fmt.channel_count));
-					file_stream.read (reinterpret_cast<char*>(&riff.fmt.sample_rate), sizeof (riff.fmt.sample_rate));
-					file_stream.read (reinterpret_cast<char*>(&riff.fmt.byte_rate), sizeof (riff.fmt.byte_rate));
-					file_stream.read (reinterpret_cast<char*>(&riff.fmt.block_align), sizeof (riff.fmt.block_align));
-					file_stream.read (reinterpret_cast<char*>(&riff.fmt.bits_per_sample), sizeof (riff.fmt.bits_per_sample));
+					file_stream.read (reinterpret_cast<char*>(&riff.fmt), sizeof (wave_chunk::format_chunk));
+					if (riff.fmt.chunk_size > sizeof_format_chunk)
+					{
+						file_stream.ignore (riff.fmt.chunk_size - sizeof_format_chunk);
+					}
 				}
 				else if (std::strncmp (chunk_ID, data_chunk_ID, sizeof(chunk_ID)) == 0)
 				{

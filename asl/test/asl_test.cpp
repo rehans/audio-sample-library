@@ -4,23 +4,25 @@
 //	http://www.boost.org/LICENSE_1_0.txt)
 
 #include "wave_io.h"
+#include <algorithm>
 
 /*!	@fnc Test silence wav file
 */
 bool test_silence ()
 {
+	int32_t expected_riff_chunk_size = 88236;
+	int32_t expected_data_chunk_size = 88200;
 	asl::wave_chunk::format_chunk expected_fmt_chunk = {
 		16, 1, 1, 44100, 88200, 2, 16
 	};
 
-	int32_t expected_data_chunk_size = 88200;
-
 	asl::wave_chunk wav;
 	asl::load_wave_file("silence_1_sec_mono_16-bit_PCM.wav", wav);
 
-	bool cmp_result = memcmp (&wav.fmt, &expected_fmt_chunk, sizeof (expected_fmt_chunk)) == 0
-					&& wav.data.chunk_size == expected_data_chunk_size
-					&& wav.data.chunk_size == wav.data.buffer.size ();
+	bool cmp_result =	wav.chunk_size == expected_riff_chunk_size && 
+						memcmp (&wav.fmt, &expected_fmt_chunk, sizeof (expected_fmt_chunk)) == 0 && 
+						wav.data.chunk_size == expected_data_chunk_size && 
+						wav.data.chunk_size == wav.data.buffer.size ();
 
 	return cmp_result;
 }
