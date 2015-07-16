@@ -30,8 +30,8 @@ static const uint16_t sizeof_format_chunk = 16; //! by specification 16 bytes
 //------------------------------------------------------------------------
 struct wave_chunk
 {
-	uint32_t chunk_size;				//! wave_chunk size
-	char riff_type[chunk_id_size];		//! riff type e.g. "WAVE" in this case
+	uint32_t chunk_size;			//! wave_chunk size
+	char riff_type[chunk_id_size];	//! riff type e.g. "WAVE" in this case
 	
 	struct format_chunk
 	{
@@ -53,6 +53,49 @@ struct wave_chunk
 };
 
 //------------------------------------------------------------------------
+/*!	@fn read_wave_stream
+	@brief reads an audio file stream of type wav
+	@param file_name Name of the file to load
+	@param wave Result of the reading
+*/
+//------------------------------------------------------------------------
+void read_wave_stream (std::istream& istream, wave_chunk& wave)
+{
+	char chunk_ID[chunk_id_size];
+	memset (chunk_ID, 0, sizeof (chunk_ID));
+	istream.read(chunk_ID, sizeof(chunk_ID));
+	if (std::strncmp (chunk_ID, riff_chunk_ID, sizeof(chunk_ID)) == 0)
+	{
+		istream.read (reinterpret_cast<char*>(&wave.chunk_size), sizeof (wave.chunk_size));
+		istream.read (wave.riff_type, sizeof (wave.riff_type));
+		while (istream.good ())
+		{
+			istream.read(chunk_ID, sizeof(chunk_ID));
+			if (std::strncmp (chunk_ID, format_chunk_ID, sizeof(chunk_ID)) == 0)
+			{
+				istream.read (reinterpret_cast<char*>(&wave.format), sizeof (wave_chunk::format_chunk));
+				if (wave.format.chunk_size > sizeof_format_chunk)
+				{
+					istream.ignore (wave.format.chunk_size - sizeof_format_chunk);
+				}
+			}
+			else if (std::strncmp (chunk_ID, data_chunk_ID, sizeof(chunk_ID)) == 0)
+			{
+				istream.read (reinterpret_cast<char*>(&wave.data.chunk_size), sizeof (wave.data.chunk_size));
+				wave.data.buffer.resize (wave.data.chunk_size);
+				istream.read (reinterpret_cast<char*>(&wave.data.buffer[0]), wave.data.chunk_size);
+			}
+			else
+			{
+				uint32_t chunk_size = 0;
+				istream.read (reinterpret_cast<char*>(&chunk_size), sizeof (chunk_size));
+				istream.ignore (chunk_size);
+			}
+		}
+	}
+}
+
+//------------------------------------------------------------------------
 /*!	@fn read_wave_file
 	@brief reads an audio file of type wav
 	@param file_name Name of the file to load
@@ -66,40 +109,33 @@ void read_wave_file (const char* file_name, wave_chunk& wave)
 	if (!file_stream.is_open())
 		return;
 
-	char chunk_ID[4];
-	memset (chunk_ID, 0, sizeof (chunk_ID));
-	file_stream.read(chunk_ID, sizeof(chunk_ID));
-	if (std::strncmp (chunk_ID, riff_chunk_ID, sizeof(chunk_ID)) == 0)
-	{
-		file_stream.read (reinterpret_cast<char*>(&wave.chunk_size), sizeof (wave.chunk_size));
-		file_stream.read (wave.riff_type, sizeof (wave.riff_type));
-		while (file_stream.good ())
-		{
-			file_stream.read(chunk_ID, sizeof(chunk_ID));
-			if (std::strncmp (chunk_ID, format_chunk_ID, sizeof(chunk_ID)) == 0)
-			{
-				file_stream.read (reinterpret_cast<char*>(&wave.format), sizeof (wave_chunk::format_chunk));
-				if (wave.format.chunk_size > sizeof_format_chunk)
-				{
-					file_stream.ignore (wave.format.chunk_size - sizeof_format_chunk);
-				}
-			}
-			else if (std::strncmp (chunk_ID, data_chunk_ID, sizeof(chunk_ID)) == 0)
-			{
-				file_stream.read (reinterpret_cast<char*>(&wave.data.chunk_size), sizeof (wave.data.chunk_size));
-				wave.data.buffer.resize (wave.data.chunk_size);
-				file_stream.read (reinterpret_cast<char*>(&wave.data.buffer[0]), wave.data.chunk_size);
-			}
-			else
-			{
-				uint32_t chunk_size = 0;
-				file_stream.read (reinterpret_cast<char*>(&chunk_size), sizeof (chunk_size));
-				file_stream.ignore (chunk_size);
-			}
-		}
-	}
-
+	read_wave_stream (file_stream, wave);
 	file_stream.close ();
+}
+
+//------------------------------------------------------------------------
+/*!	@fn write_wave_file
+	@brief writes a wave chunk to file
+	@param file_name Name of the file to write
+	@param wave Chunk to be written
+*/
+//------------------------------------------------------------------------
+void write_wave_stream (std::ostream& ostream, const wave_chunk& wave)
+{
+	//!	RIFF
+	ostream.write (riff_chunk_ID, sizeof (riff_chunk_ID));
+	ostream.write (reinterpret_cast<const char*>(&wave.chunk_size), sizeof (wave.chunk_size));
+	ostream.write (wave_type, sizeof (wave_type));
+
+	//! fmt
+	ostream.write (format_chunk_ID, sizeof (format_chunk_ID));
+	ostream.write (reinterpret_cast<const char*>(&wave.format), sizeof (wave.format));
+
+	//! data
+	ostream.write (data_chunk_ID, sizeof (data_chunk_ID));
+	ostream.write (reinterpret_cast<const char*>(&wave.data.chunk_size), sizeof (wave.data.chunk_size));
+	if (wave.data.buffer.size () > 0)
+		ostream.write (reinterpret_cast<const char*>(&wave.data.buffer[0]), wave.data.buffer.size ());
 }
 
 //------------------------------------------------------------------------
@@ -116,21 +152,7 @@ void write_wave_file (const char* file_name, const wave_chunk& wave)
 	if (!file_stream.is_open())
 		return;
 
-	//!	RIFF
-	file_stream.write (riff_chunk_ID, sizeof (riff_chunk_ID));
-	file_stream.write (reinterpret_cast<const char*>(&wave.chunk_size), sizeof (wave.chunk_size));
-	file_stream.write (wave_type, sizeof (wave_type));
-
-	//! fmt
-	file_stream.write (format_chunk_ID, sizeof (format_chunk_ID));
-	file_stream.write (reinterpret_cast<const char*>(&wave.format), sizeof (wave.format));
-
-	//! data
-	file_stream.write (data_chunk_ID, sizeof (data_chunk_ID));
-	file_stream.write (reinterpret_cast<const char*>(&wave.data.chunk_size), sizeof (wave.data.chunk_size));
-	if (wave.data.buffer.size () > 0)
-		file_stream.write (reinterpret_cast<const char*>(&wave.data.buffer[0]), wave.data.buffer.size ());
-
+	write_wave_stream (file_stream, wave);
 	file_stream.close ();
 }
 
