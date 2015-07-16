@@ -13,10 +13,11 @@
 
 namespace asl
 {
-static const char* riff_chunk_ID	= "RIFF";
-static const char* wave_type		= "WAVE";
-static const char* format_chunk_ID	= "fmt ";
-static const char* data_chunk_ID	= "data";
+static const uint32_t chunk_id_size = 4;
+static const char riff_chunk_ID[chunk_id_size]	= { 'R', 'I', 'F', 'F' };
+static const char wave_type[chunk_id_size]		= { 'W', 'A', 'V', 'E' };
+static const char format_chunk_ID[chunk_id_size]= { 'f', 'm', 't', ' ' };
+static const char data_chunk_ID[chunk_id_size]	= { 'd', 'a', 't', 'a' };
 
 static const uint16_t sizeof_format_chunk = 16; //! by specification 16 bytes
 
@@ -29,8 +30,8 @@ static const uint16_t sizeof_format_chunk = 16; //! by specification 16 bytes
 //------------------------------------------------------------------------
 struct wave_chunk
 {
-	uint32_t chunk_size;	//! wave_chunk size
-	char riff_type[4];		//! riff type e.g. "WAVE" in this case
+	uint32_t chunk_size;				//! wave_chunk size
+	char riff_type[chunk_id_size];		//! riff type e.g. "WAVE" in this case
 	
 	struct format_chunk
 	{
