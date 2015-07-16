@@ -55,7 +55,7 @@ struct wave_chunk
 //------------------------------------------------------------------------
 /*!	@fn read_wave_stream
 	@brief reads an audio file stream of type wav
-	@param file_name Name of the file to load
+	@param istream An open in stream
 	@param wave Result of the reading
 */
 //------------------------------------------------------------------------
@@ -114,9 +114,9 @@ void read_wave_file (const char* file_name, wave_chunk& wave)
 }
 
 //------------------------------------------------------------------------
-/*!	@fn write_wave_file
-	@brief writes a wave chunk to file
-	@param file_name Name of the file to write
+/*!	@fn write_wave_stream
+	@brief writes a wave chunk to stream
+	@param ostream An open out stream
 	@param wave Chunk to be written
 */
 //------------------------------------------------------------------------
