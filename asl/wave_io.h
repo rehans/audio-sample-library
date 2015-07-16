@@ -128,7 +128,8 @@ void write_wave_file (const char* file_name, const wave_chunk& wave)
 	//! data
 	file_stream.write (data_chunk_ID, sizeof (data_chunk_ID));
 	file_stream.write (reinterpret_cast<const char*>(&wave.data.chunk_size), sizeof (wave.data.chunk_size));
-	file_stream.write (reinterpret_cast<const char*>(&wave.data.buffer[0]), wave.data.buffer.size ());
+	if (wave.data.buffer.size () > 0)
+		file_stream.write (reinterpret_cast<const char*>(&wave.data.buffer[0]), wave.data.buffer.size ());
 
 	file_stream.close ();
 }
