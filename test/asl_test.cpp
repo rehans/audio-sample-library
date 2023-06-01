@@ -3,8 +3,7 @@
 //	(See accompanying file LICENSE_1_0.txt or copy at
 //	http://www.boost.org/LICENSE_1_0.txt)
 
-#include "wave_io.h"
-#include "aiff_io.h"
+#include "asl/wave_io.h"
 #include <algorithm>
 
 /*!	@fn test_read_wave_silence
