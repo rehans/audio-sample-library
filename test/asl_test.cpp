@@ -16,7 +16,7 @@ bool test_read_wave_silence()
                                                       88200, 2, 16};
 
     asl::WaveChunk wav;
-    asl::read_wave_file("silence_1_sec_mono_16-bit_PCM.wav", wav);
+    asl::read_wave_file(TEST_FILE_silence_1_sec_mono_16_bit_PCM, wav);
 
     bool cmp_result = wav.chunk_size == expected_riff_chunk_size &&
                       memcmp(&wav.format, &expected_fmt_chunk,
@@ -32,7 +32,7 @@ bool test_read_wave_silence()
 bool test_write_wave_silence()
 {
     asl::WaveChunk wav;
-    asl::read_wave_file("silence_1_sec_mono_16-bit_PCM.wav", wav);
+    asl::read_wave_file(TEST_FILE_silence_1_sec_mono_16_bit_PCM, wav);
     asl::write_wave_file("silence_1_sec_mono_16-bit_PCM_test.wav", wav);
 
     asl::WaveChunk wav2;

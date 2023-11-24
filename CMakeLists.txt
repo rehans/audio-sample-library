@@ -16,3 +16,8 @@ target_link_libraries(asl_test
     PRIVATE
         asl
 )
+
+target_compile_definitions(asl_test
+    PRIVATE
+        TEST_FILE_silence_1_sec_mono_16_bit_PCM="${CMAKE_CURRENT_LIST_DIR}/test/silence_1_sec_mono_16-bit_PCM.wav"
+)
