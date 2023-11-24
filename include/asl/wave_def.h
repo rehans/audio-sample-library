@@ -14,7 +14,7 @@ static const char WAVE_TYPE[CHUNK_ID_SIZE]       = {'W', 'A', 'V', 'E'};
 static const char FORMAT_CHUNK_ID[CHUNK_ID_SIZE] = {'f', 'm', 't', ' '};
 static const char DATA_CHUNK_ID[CHUNK_ID_SIZE]   = {'d', 'a', 't', 'a'};
 
-static const uint16_t sizeof_format_chunk = 16; //! by specification 16 bytes
+static const uint16_t SIZEOF_FORMAT_CHUNK = 16; //! by specification 16 bytes
 
 //------------------------------------------------------------------------
 /*!	@struct riff_chunk

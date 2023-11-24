@@ -35,10 +35,10 @@ void read_wave_stream(std::istream& istream, WaveChunk& wave)
             {
                 istream.read(reinterpret_cast<char*>(&wave.format),
                              sizeof(WaveChunk::FormatChunk));
-                if (wave.format.chunk_size > sizeof_format_chunk)
+                if (wave.format.chunk_size > SIZEOF_FORMAT_CHUNK)
                 {
                     istream.ignore(wave.format.chunk_size -
-                                   sizeof_format_chunk);
+                                   SIZEOF_FORMAT_CHUNK);
                 }
             }
             else if (std::strncmp(chunk_ID, DATA_CHUNK_ID, sizeof(chunk_ID)) ==
