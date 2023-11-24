@@ -10,11 +10,11 @@
 #include <vector>
 
 namespace asl {
-static const uint32_t chunk_id_size              = 4;
-static const char riff_chunk_ID[chunk_id_size]   = {'R', 'I', 'F', 'F'};
-static const char wave_type[chunk_id_size]       = {'W', 'A', 'V', 'E'};
-static const char format_chunk_ID[chunk_id_size] = {'f', 'm', 't', ' '};
-static const char data_chunk_ID[chunk_id_size]   = {'d', 'a', 't', 'a'};
+static const uint32_t CHUNK_ID_SIZE              = 4;
+static const char RIFF_CHUNK_ID[CHUNK_ID_SIZE]   = {'R', 'I', 'F', 'F'};
+static const char WAVE_TYPE[CHUNK_ID_SIZE]       = {'W', 'A', 'V', 'E'};
+static const char FORMAT_CHUNK_ID[CHUNK_ID_SIZE] = {'f', 'm', 't', ' '};
+static const char DATA_CHUNK_ID[CHUNK_ID_SIZE]   = {'d', 'a', 't', 'a'};
 
 static const uint16_t sizeof_format_chunk = 16; //! by specification 16 bytes
 
@@ -25,14 +25,14 @@ static const uint16_t sizeof_format_chunk = 16; //! by specification 16 bytes
     WAVE requires two sub chunks "fmt " and "data".
 */
 //------------------------------------------------------------------------
-struct wave_chunk
+struct WaveChunk
 {
-    uint32_t chunk_size;           //! wave_chunk size
-    char riff_type[chunk_id_size]; //! riff type e.g. "WAVE" in this case
+    uint32_t chunk_size;           //! WaveChunk size
+    char riff_type[CHUNK_ID_SIZE]; //! riff type e.g. "WAVE" in this case
 
-    struct format_chunk
+    struct FormatChunk
     {
-        uint32_t chunk_size;      //! format_chunk size is 16 bytes by
+        uint32_t chunk_size;      //! FormatChunk size is 16 bytes by
                                   //! specification for PCM
         uint16_t audio_format;    //! audio format e.g. 0x0001 is PCM
         uint16_t channel_count;   //! number of channels
@@ -43,9 +43,9 @@ struct wave_chunk
         //! There can be some more in case it is not PCM
     } format;
 
-    struct data_chunk
+    struct DataChunk
     {
-        uint32_t chunk_size;         //! data_chunk size
+        uint32_t chunk_size;         //! DataChunk size
         std::vector<uint8_t> buffer; //! buffer with e.g. PCM data
     } data;
 };
@@ -57,12 +57,12 @@ struct wave_chunk
     @param wave Result of the reading
 */
 //------------------------------------------------------------------------
-void read_wave_stream(std::istream& istream, wave_chunk& wave)
+void read_wave_stream(std::istream& istream, WaveChunk& wave)
 {
-    char chunk_ID[chunk_id_size];
+    char chunk_ID[CHUNK_ID_SIZE];
     memset(chunk_ID, 0, sizeof(chunk_ID));
     istream.read(chunk_ID, sizeof(chunk_ID));
-    if (std::strncmp(chunk_ID, riff_chunk_ID, sizeof(chunk_ID)) == 0)
+    if (std::strncmp(chunk_ID, RIFF_CHUNK_ID, sizeof(chunk_ID)) == 0)
     {
         istream.read(reinterpret_cast<char*>(&wave.chunk_size),
                      sizeof(wave.chunk_size));
@@ -70,17 +70,17 @@ void read_wave_stream(std::istream& istream, wave_chunk& wave)
         while (istream.good())
         {
             istream.read(chunk_ID, sizeof(chunk_ID));
-            if (std::strncmp(chunk_ID, format_chunk_ID, sizeof(chunk_ID)) == 0)
+            if (std::strncmp(chunk_ID, FORMAT_CHUNK_ID, sizeof(chunk_ID)) == 0)
             {
                 istream.read(reinterpret_cast<char*>(&wave.format),
-                             sizeof(wave_chunk::format_chunk));
+                             sizeof(WaveChunk::FormatChunk));
                 if (wave.format.chunk_size > sizeof_format_chunk)
                 {
                     istream.ignore(wave.format.chunk_size -
                                    sizeof_format_chunk);
                 }
             }
-            else if (std::strncmp(chunk_ID, data_chunk_ID, sizeof(chunk_ID)) ==
+            else if (std::strncmp(chunk_ID, DATA_CHUNK_ID, sizeof(chunk_ID)) ==
                      0)
             {
                 istream.read(reinterpret_cast<char*>(&wave.data.chunk_size),
@@ -107,7 +107,7 @@ void read_wave_stream(std::istream& istream, wave_chunk& wave)
     @param wave Result of the reading
 */
 //------------------------------------------------------------------------
-void read_wave_file(const char* file_name, wave_chunk& wave)
+void read_wave_file(const char* file_name, WaveChunk& wave)
 {
     std::ifstream file_stream;
     file_stream.open(file_name, std::ifstream::binary);
@@ -125,21 +125,21 @@ void read_wave_file(const char* file_name, wave_chunk& wave)
     @param wave Chunk to be written
 */
 //------------------------------------------------------------------------
-void write_wave_stream(std::ostream& ostream, const wave_chunk& wave)
+void write_wave_stream(std::ostream& ostream, const WaveChunk& wave)
 {
     //!	RIFF
-    ostream.write(riff_chunk_ID, sizeof(riff_chunk_ID));
+    ostream.write(RIFF_CHUNK_ID, sizeof(RIFF_CHUNK_ID));
     ostream.write(reinterpret_cast<const char*>(&wave.chunk_size),
                   sizeof(wave.chunk_size));
-    ostream.write(wave_type, sizeof(wave_type));
+    ostream.write(WAVE_TYPE, sizeof(WAVE_TYPE));
 
     //! fmt
-    ostream.write(format_chunk_ID, sizeof(format_chunk_ID));
+    ostream.write(FORMAT_CHUNK_ID, sizeof(FORMAT_CHUNK_ID));
     ostream.write(reinterpret_cast<const char*>(&wave.format),
                   sizeof(wave.format));
 
     //! data
-    ostream.write(data_chunk_ID, sizeof(data_chunk_ID));
+    ostream.write(DATA_CHUNK_ID, sizeof(DATA_CHUNK_ID));
     ostream.write(reinterpret_cast<const char*>(&wave.data.chunk_size),
                   sizeof(wave.data.chunk_size));
     if (wave.data.buffer.size() > 0)
@@ -154,7 +154,7 @@ void write_wave_stream(std::ostream& ostream, const wave_chunk& wave)
     @param wave Chunk to be written
 */
 //------------------------------------------------------------------------
-void write_wave_file(const char* file_name, const wave_chunk& wave)
+void write_wave_file(const char* file_name, const WaveChunk& wave)
 {
     std::ofstream file_stream;
     file_stream.open(file_name, std::ifstream::binary);
